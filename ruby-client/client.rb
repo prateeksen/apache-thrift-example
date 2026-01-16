@@ -85,6 +85,41 @@ class RubyClient
       all_users.each do |user|
         puts "  User: #{format_user(user)}"
       end
+      
+      # Test TApplicationException (Protocol Exception)
+      puts "\n8. Testing TApplicationException (Protocol Exception)..."
+      
+      # Test 1: Valid call (should work)
+      begin
+        result = client.validateUserData("John Doe", 30, true)
+        puts "  ✓ Valid data accepted: #{result}"
+      rescue Thrift::ApplicationException => e
+        puts "  ✗ Unexpected TApplicationException: #{e.type} - #{e.message}"
+      rescue => e
+        puts "  ✗ Unexpected Exception: #{e}"
+      end
+      
+      # Test 2: Invalid data (should trigger TApplicationException)
+      begin
+        puts "  Attempting invalid call with nil name..."
+        result = client.validateUserData(nil, 25, true)
+        puts "  ✗ Should not reach here! Result: #{result}"
+      rescue Thrift::ApplicationException => e
+        puts "  ✓ Caught TApplicationException (EXCEPTION frame): #{e.type} - #{e.message}"
+      rescue => e
+        puts "  ✗ Unexpected Exception instead of TApplicationException: #{e}"
+      end
+      
+      # Test 3: Invalid age (should trigger TApplicationException)
+      begin
+        puts "  Attempting invalid call with age = 200..."
+        result = client.validateUserData("Jane Doe", 200, false)
+        puts "  ✗ Should not reach here! Result: #{result}"
+      rescue Thrift::ApplicationException => e
+        puts "  ✓ Caught TApplicationException (EXCEPTION frame): #{e.type} - #{e.message}"
+      rescue => e
+        puts "  ✗ Unexpected Exception instead of TApplicationException: #{e}"
+      end
 
       puts "\n=== Ruby Client Demo Complete ==="
 

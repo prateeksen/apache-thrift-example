@@ -5,7 +5,7 @@
 #
 
 require 'thrift'
-require_relative 'user_service_types'
+require 'user_service_types'
 
 module UserService
   module UserService
@@ -114,6 +114,26 @@ module UserService
         raise ::Thrift::ApplicationException.new(::Thrift::ApplicationException::MISSING_RESULT, 'getAllUsers failed: unknown result')
       end
 
+      def validateUserData(name, age, isActive)
+        send_validateUserData(name, age, isActive)
+        return recv_validateUserData()
+      end
+
+      def send_validateUserData(name, age, isActive)
+        send_message('validateUserData', ValidateUserData_args, :name => name, :age => age, :isActive => isActive)
+      end
+
+      def recv_validateUserData()
+        fname, mtype, rseqid = receive_message_begin()
+        handle_exception(mtype)
+        if reply_seqid(rseqid)==false
+          raise "seqid reply faild"
+        end
+        result = receive_message(ValidateUserData_result)
+        return result.success unless result.success.nil?
+        raise ::Thrift::ApplicationException.new(::Thrift::ApplicationException::MISSING_RESULT, 'validateUserData failed: unknown result')
+      end
+
     end
 
     class Processor
@@ -164,6 +184,13 @@ module UserService
         result = GetAllUsers_result.new()
         result.success = @handler.getAllUsers()
         write_result(result, oprot, 'getAllUsers', seqid)
+      end
+
+      def process_validateUserData(seqid, iprot, oprot)
+        args = read_args(iprot, ValidateUserData_args)
+        result = ValidateUserData_result.new()
+        result.success = @handler.validateUserData(args.name, args.age, args.isActive)
+        write_result(result, oprot, 'validateUserData', seqid)
       end
 
     end
@@ -325,6 +352,45 @@ module UserService
 
       FIELDS = {
         SUCCESS => {:type => ::Thrift::Types::LIST, :name => 'success', :element => {:type => ::Thrift::Types::STRUCT, :class => ::UserService::User}}
+      }
+
+      def struct_fields; FIELDS; end
+
+      def validate
+      end
+
+      ::Thrift::Struct.generate_accessors self
+    end
+
+    class ValidateUserData_args
+      include ::Thrift::Struct, ::Thrift::Struct_Union
+      NAME = 1
+      AGE = 2
+      ISACTIVE = 3
+
+      FIELDS = {
+        NAME => {:type => ::Thrift::Types::STRING, :name => 'name'},
+        AGE => {:type => ::Thrift::Types::I32, :name => 'age'},
+        ISACTIVE => {:type => ::Thrift::Types::BOOL, :name => 'isActive'}
+      }
+
+      def struct_fields; FIELDS; end
+
+      def validate
+        raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field name is unset!') unless @name
+        raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field age is unset!') unless @age
+        raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field isActive is unset!') if @isActive.nil?
+      end
+
+      ::Thrift::Struct.generate_accessors self
+    end
+
+    class ValidateUserData_result
+      include ::Thrift::Struct, ::Thrift::Struct_Union
+      SUCCESS = 0
+
+      FIELDS = {
+        SUCCESS => {:type => ::Thrift::Types::STRING, :name => 'success'}
       }
 
       def struct_fields; FIELDS; end

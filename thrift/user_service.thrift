@@ -26,5 +26,8 @@ service UserService {
     void deleteUser(1: i64 userId) throws (1: UserNotFoundException ex),
     
     // List all users
-    list<User> getAllUsers()
+    list<User> getAllUsers(),
+    
+    // Test method for TApplicationException (method with strict parameters)
+    string validateUserData(1: required string name, 2: required i32 age, 3: required bool isActive)
 }

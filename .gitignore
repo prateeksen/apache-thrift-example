@@ -1,7 +1,7 @@
 # Generated Thrift bindings
-gen-java/
-gen-py/
-gen-rb/
+# gen-java/
+# gen-py/
+# gen-rb/
 
 # Maven build artifacts
 java-server/target/

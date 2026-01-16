@@ -57,4 +57,25 @@ public class UserServiceImpl implements UserService.Iface {
         System.out.println("Retrieved " + allUsers.size() + " users");
         return allUsers;
     }
+
+    @Override
+    public String validateUserData(String name, int age, boolean isActive) throws TException {
+        System.out.println("Validating user data: name=" + name + ", age=" + age + ", isActive=" + isActive);
+        
+        if (name == null || name.trim().isEmpty()) {
+            throw new org.apache.thrift.TApplicationException(
+                org.apache.thrift.TApplicationException.INVALID_MESSAGE_TYPE,
+                "Name cannot be null or empty"
+            );
+        }
+        
+        if (age < 0 || age > 150) {
+            throw new org.apache.thrift.TApplicationException(
+                org.apache.thrift.TApplicationException.WRONG_METHOD_NAME,
+                "Age must be between 0 and 150"
+            );
+        }
+        
+        return "User data is valid: " + name + " (age: " + age + ", active: " + isActive + ")";
+    }
 }

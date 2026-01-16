@@ -8,6 +8,7 @@ from thrift.transport import TSocket
 from thrift.transport import TTransport
 from thrift.protocol import TBinaryProtocol
 from thrift.server import TServer
+from thrift.Thrift import TApplicationException
 
 from UserService import UserService
 from UserService.ttypes import *
@@ -85,6 +86,38 @@ def perform_user_operations(client):
         all_users = client.getAllUsers()
         for user in all_users:
             print(f"  User: ID={user.id}, Name={user.name}, Age={user.age}")
+        
+        # Test TApplicationException (Protocol Exception)
+        print("\n8. Testing TApplicationException (Protocol Exception)...")
+        
+        # Test 1: Valid call (should work)
+        try:
+            result = client.validateUserData("John Doe", 30, True)
+            print(f"  ✓ Valid data accepted: {result}")
+        except TApplicationException as e:
+            print(f"  ✗ Unexpected TApplicationException: {e.type} - {e.message}")
+        except Exception as e:
+            print(f"  ✗ Unexpected Exception: {e}")
+        
+        # Test 2: Invalid data (should trigger TApplicationException)
+        try:
+            print("  Attempting invalid call with None name...")
+            result = client.validateUserData(None, 25, True)
+            print(f"  ✗ Should not reach here! Result: {result}")
+        except TApplicationException as e:
+            print(f"  ✓ Caught TApplicationException (EXCEPTION frame): {e.type} - {e.message}")
+        except Exception as e:
+            print(f"  ✗ Unexpected Exception instead of TApplicationException: {e}")
+        
+        # Test 3: Invalid age (should trigger TApplicationException)
+        try:
+            print("  Attempting invalid call with age = 200...")
+            result = client.validateUserData("Jane Doe", 200, False)
+            print(f"  ✗ Should not reach here! Result: {result}")
+        except TApplicationException as e:
+            print(f"  ✓ Caught TApplicationException (EXCEPTION frame): {e.type} - {e.message}")
+        except Exception as e:
+            print(f"  ✗ Unexpected Exception instead of TApplicationException: {e}")
             
         print("\n=== Python Client Demo Complete ===")
         

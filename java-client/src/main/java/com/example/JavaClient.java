@@ -2,6 +2,7 @@ package com.example;
 
 import UserService.*;
 import org.apache.thrift.TException;
+import org.apache.thrift.TApplicationException;
 import org.apache.thrift.protocol.TBinaryProtocol;
 import org.apache.thrift.protocol.TProtocol;
 import org.apache.thrift.transport.TSocket;
@@ -33,6 +34,9 @@ public class JavaClient {
             System.err.println("Transport error: " + e.getMessage());
         } catch (TException e) {
             System.err.println("Thrift error: " + e.getMessage());
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+            System.err.println("InterruptedException error: " + e.getMessage());
         } finally {
             if (transport != null) {
                 transport.close();
@@ -41,7 +45,7 @@ public class JavaClient {
         }
     }
 
-    private static void performUserOperations(UserService.Client client) throws TException {
+    private static void performUserOperations(UserService.Client client) throws TException, InterruptedException {
         System.out.println("\n=== Java Client Demo ===");
 
         // Create users
@@ -86,6 +90,41 @@ public class JavaClient {
         allUsers = client.getAllUsers();
         for (User user : allUsers) {
             System.out.println("  User: " + user);
+        }
+
+        // Test TApplicationException (Protocol Exception)
+        System.out.println("\n8. Testing TApplicationException (Protocol Exception)...");
+        
+        // Test 1: Valid call (should work)
+        // try {
+        //     String result = client.validateUserData("John Doe", 30, true);
+        //     System.out.println("  ✓ Valid data accepted: " + result);
+        // } catch (TApplicationException e) {
+        //     System.out.println("  ✗ Unexpected TApplicationException: " + e.getMessage());
+        // } catch (TException e) {
+        //     System.out.println("  ✗ Unexpected TException: " + e.getMessage());
+        // }
+        
+        // Test 2: Invalid data (should trigger TApplicationException)
+        // try {
+        //     System.out.println("  Attempting invalid call with null name...");
+        //     String result = client.validateUserData(null, 25, true);
+        //     System.out.println("  ✗ Should not reach here! Result: " + result);
+        // } catch (TApplicationException e) {
+        //     System.out.println("  ✓ Caught TApplicationException (EXCEPTION frame): " + e.getType() + " - " + e.getMessage());
+        // } catch (TException e) {
+        //     System.out.println("  ✗ Unexpected TException instead of TApplicationException: " + e.getMessage());
+        // }
+        
+        // Test 3: Invalid age (should trigger TApplicationException)
+        try {
+            System.out.println("  Attempting invalid call with age = 200...");
+            String result = client.validateUserData("Jane Doe", 200, false);
+            System.out.println("  ✗ Should not reach here! Result: " + result);
+        } catch (TApplicationException e) {
+            System.out.println("  ✓ Caught TApplicationException (EXCEPTION frame): " + e.getType() + " - " + e.getMessage());
+        } catch (TException e) {
+            System.out.println("  ✗ Unexpected TException instead of TApplicationException: " + e.getMessage());
         }
 
         System.out.println("\n=== Java Client Demo Complete ===");
