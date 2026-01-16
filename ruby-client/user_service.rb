@@ -134,6 +134,13 @@ module UserService
         raise ::Thrift::ApplicationException.new(::Thrift::ApplicationException::MISSING_RESULT, 'validateUserData failed: unknown result')
       end
 
+      def logUserActivity(action, userId, timestamp)
+        send_logUserActivity(action, userId, timestamp)
+      end
+
+      def send_logUserActivity(action, userId, timestamp)
+        send_oneway_message('logUserActivity', LogUserActivity_args, :action => action, :userId => userId, :timestamp => timestamp)
+      end
     end
 
     class Processor
@@ -191,6 +198,12 @@ module UserService
         result = ValidateUserData_result.new()
         result.success = @handler.validateUserData(args.name, args.age, args.isActive)
         write_result(result, oprot, 'validateUserData', seqid)
+      end
+
+      def process_logUserActivity(seqid, iprot, oprot)
+        args = read_args(iprot, LogUserActivity_args)
+        @handler.logUserActivity(args.action, args.userId, args.timestamp)
+        return
       end
 
     end
@@ -391,6 +404,41 @@ module UserService
 
       FIELDS = {
         SUCCESS => {:type => ::Thrift::Types::STRING, :name => 'success'}
+      }
+
+      def struct_fields; FIELDS; end
+
+      def validate
+      end
+
+      ::Thrift::Struct.generate_accessors self
+    end
+
+    class LogUserActivity_args
+      include ::Thrift::Struct, ::Thrift::Struct_Union
+      ACTION = 1
+      USERID = 2
+      TIMESTAMP = 3
+
+      FIELDS = {
+        ACTION => {:type => ::Thrift::Types::STRING, :name => 'action'},
+        USERID => {:type => ::Thrift::Types::I64, :name => 'userId'},
+        TIMESTAMP => {:type => ::Thrift::Types::STRING, :name => 'timestamp'}
+      }
+
+      def struct_fields; FIELDS; end
+
+      def validate
+      end
+
+      ::Thrift::Struct.generate_accessors self
+    end
+
+    class LogUserActivity_result
+      include ::Thrift::Struct, ::Thrift::Struct_Union
+
+      FIELDS = {
+
       }
 
       def struct_fields; FIELDS; end

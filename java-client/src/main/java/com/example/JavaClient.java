@@ -127,6 +127,40 @@ public class JavaClient {
             System.out.println("  ✗ Unexpected TException instead of TApplicationException: " + e.getMessage());
         }
 
+        // Test Oneway calls (Fire-and-forget)
+        System.out.println("\n9. Testing Oneway calls (Fire-and-forget)...");
+        
+        try {
+            long currentTime = System.currentTimeMillis();
+            String timestamp = java.time.Instant.ofEpochMilli(currentTime).toString();
+            
+            System.out.println("  Sending oneway call: logUserActivity('login', 1, '" + timestamp + "')");
+            long startTime = System.nanoTime();
+            
+            // This call returns immediately - no response expected (ONEWAY frame)
+            client.logUserActivity("login", 1L, timestamp);
+            
+            long endTime = System.nanoTime();
+            long duration = endTime - startTime;
+            
+            System.out.println("  ✓ Oneway call completed in " + (duration / 1000) + " microseconds");
+            System.out.println("  ✓ No response expected (fire-and-forget semantics)");
+            
+            // Send multiple oneway calls rapidly
+            for (int i = 0; i < 3; i++) {
+                String action = "action_" + i;
+                long userId = i + 10;
+                String ts = java.time.Instant.ofEpochMilli(System.currentTimeMillis()).toString();
+                client.logUserActivity(action, userId, ts);
+                System.out.println("  ✓ Sent oneway call " + (i + 1) + ": " + action);
+            }
+            
+            System.out.println("  ✓ All oneway calls sent rapidly (no waiting for responses)");
+            
+        } catch (TException e) {
+            System.out.println("  ✗ Unexpected error in oneway call: " + e.getMessage());
+        }
+
         System.out.println("\n=== Java Client Demo Complete ===");
     }
 }

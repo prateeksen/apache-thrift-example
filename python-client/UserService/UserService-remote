@@ -30,6 +30,7 @@ if len(sys.argv) <= 1 or sys.argv[1] == '--help':
     print('  void deleteUser(i64 userId)')
     print('   getAllUsers()')
     print('  string validateUserData(string name, i32 age, bool isActive)')
+    print('  void logUserActivity(string action, i64 userId, string timestamp)')
     print('')
     sys.exit(0)
 
@@ -144,6 +145,12 @@ elif cmd == 'validateUserData':
         print('validateUserData requires 3 args')
         sys.exit(1)
     pp.pprint(client.validateUserData(args[0], eval(args[1]), eval(args[2]),))
+
+elif cmd == 'logUserActivity':
+    if len(args) != 3:
+        print('logUserActivity requires 3 args')
+        sys.exit(1)
+    pp.pprint(client.logUserActivity(args[0], eval(args[1]), args[2],))
 
 else:
     print('Unrecognized method %s' % cmd)

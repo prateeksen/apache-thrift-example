@@ -412,10 +412,77 @@ end
 ```
 
 ### Oneway Calls (Fire-and-forget)
-```hex
-80 01 00 04    # ONEWAY message type
-# ... no response expected ...
+
+#### Oneway Method Definition
+```thrift
+// No return value, no exceptions, no response expected
+oneway void logUserActivity(1: string action, 2: i64 userId, 3: string timestamp)
 ```
+
+#### Oneway Request Frame Structure
+```hex
+# Oneway Request Header
+80 01 00 04    # Magic + Message Type (ONEWAY = 0x04)
+00 00 00 0F    # Method name length (15 bytes)
+6C 6F 67 55 73 65 72 41 63 74 69 76 69 74 79    # "logUserActivity" 
+00 00 00 05    # Sequence ID (5)
+
+# Method Arguments (similar to regular calls)
+0B 00 01       # Field 1: action (string)
+00 00 00 05    # String length: 5
+6C 6F 67 69 6E # "login"
+
+0A 00 02       # Field 2: userId (i64)  
+00 00 00 00 00 00 00 01    # Value: 1L
+
+0B 00 03       # Field 3: timestamp (string)
+00 00 00 1A    # String length: 26
+32 30 32 36 2D 30 31 2D 31 36 54 31 32 3A 33 34 3A 35 36 2E 37 38 39 5A    # "2026-01-16T12:34:56.789Z"
+
+00             # STOP field
+```
+
+#### Key Oneway Characteristics
+- **No Response**: Server sends no reply message
+- **Fire-and-Forget**: Client doesn't wait for response
+- **Fast**: Minimal latency for client
+- **No Error Handling**: Client can't know if server processed successfully
+- **Async Server**: Server can process in background
+
+#### Implementation Examples
+
+**Server Implementation:**
+```java
+@Override
+public void logUserActivity(String action, long userId, String timestamp) throws TException {
+    // Process asynchronously - no response sent
+    System.out.println("[ONEWAY] User Activity: " + timestamp + " - User " + userId + ": " + action);
+}
+```
+
+**Client Usage:**
+```java
+// Java - returns immediately
+client.logUserActivity("login", 1L, "2026-01-16T12:34:56Z");
+
+// Python - no response expected
+client.logUserActivity("logout", 2, "2026-01-16T12:35:00Z")
+
+# Ruby - fire-and-forget
+client.logUserActivity("view_profile", 3, "2026-01-16T12:35:15Z")
+```
+
+#### Performance Benefits
+- **Reduced Latency**: No round-trip waiting
+- **Higher Throughput**: Client can send multiple calls rapidly
+- **Async Processing**: Server can batch or background process
+- **Network Efficiency**: 50% fewer packets (no responses)
+
+#### Use Cases
+- **Logging/Metrics**: Activity logs, performance metrics
+- **Notifications**: Fire-and-forget alerts
+- **Background Tasks**: Cleanup, maintenance operations
+- **Event Streaming**: Real-time event publishing
 
 ### Multiplexed Services
 ```hex

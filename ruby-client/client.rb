@@ -120,6 +120,40 @@ class RubyClient
       rescue => e
         puts "  ✗ Unexpected Exception instead of TApplicationException: #{e}"
       end
+      
+      # Test Oneway calls (Fire-and-forget)
+      puts "\n9. Testing Oneway calls (Fire-and-forget)..."
+      
+      begin
+        current_time = Time.now.to_f * 1000
+        timestamp = Time.now.strftime('%Y-%m-%dT%H:%M:%S.%L') + 'Z'
+        
+        puts "  Sending oneway call: logUserActivity('login', 1, '#{timestamp}')"
+        start_time = Process.clock_gettime(Process::CLOCK_MONOTONIC, :nanosecond)
+        
+        # This call returns immediately - no response expected (ONEWAY frame)
+        client.logUserActivity("login", 1, timestamp)
+        
+        end_time = Process.clock_gettime(Process::CLOCK_MONOTONIC, :nanosecond)
+        duration = (end_time - start_time) / 1000  # microseconds
+        
+        puts "  ✓ Oneway call completed in #{duration.to_i} microseconds"
+        puts "  ✓ No response expected (fire-and-forget semantics)"
+        
+        # Send multiple oneway calls rapidly
+        (0..2).each do |i|
+          action = "action_#{i}"
+          user_id = i + 10
+          ts = Time.now.strftime('%Y-%m-%dT%H:%M:%S.%L') + 'Z'
+          client.logUserActivity(action, user_id, ts)
+          puts "  ✓ Sent oneway call #{i + 1}: #{action}"
+        end
+        
+        puts "  ✓ All oneway calls sent rapidly (no waiting for responses)"
+        
+      rescue => e
+        puts "  ✗ Unexpected error in oneway call: #{e}"
+      end
 
       puts "\n=== Ruby Client Demo Complete ==="
 

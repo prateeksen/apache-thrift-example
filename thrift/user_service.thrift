@@ -29,5 +29,8 @@ service UserService {
     list<User> getAllUsers(),
     
     // Test method for TApplicationException (method with strict parameters)
-    string validateUserData(1: required string name, 2: required i32 age, 3: required bool isActive)
+    string validateUserData(1: required string name, 2: required i32 age, 3: required bool isActive),
+    
+    // Oneway method for fire-and-forget calls (no response expected)
+    oneway void logUserActivity(1: string action, 2: i64 userId, 3: string timestamp)
 }

@@ -118,6 +118,39 @@ def perform_user_operations(client):
             print(f"  ✓ Caught TApplicationException (EXCEPTION frame): {e.type} - {e.message}")
         except Exception as e:
             print(f"  ✗ Unexpected Exception instead of TApplicationException: {e}")
+        
+        # Test Oneway calls (Fire-and-forget)
+        print("\n9. Testing Oneway calls (Fire-and-forget)...")
+        
+        try:
+            import time
+            current_time = int(time.time() * 1000)
+            timestamp = time.strftime('%Y-%m-%dT%H:%M:%S.%f')[:-3] + 'Z'
+            
+            print(f"  Sending oneway call: logUserActivity('login', 1, '{timestamp}')")
+            start_time = time.time()
+            
+            # This call returns immediately - no response expected (ONEWAY frame)
+            client.logUserActivity("login", 1, timestamp)
+            
+            end_time = time.time()
+            duration = (end_time - start_time) * 1000000  # microseconds
+            
+            print(f"  ✓ Oneway call completed in {duration:.0f} microseconds")
+            print("  ✓ No response expected (fire-and-forget semantics)")
+            
+            # Send multiple oneway calls rapidly
+            for i in range(3):
+                action = f"action_{i}"
+                user_id = i + 10
+                ts = time.strftime('%Y-%m-%dT%H:%M:%S.%f')[:-3] + 'Z'
+                client.logUserActivity(action, user_id, ts)
+                print(f"  ✓ Sent oneway call {i + 1}: {action}")
+            
+            print("  ✓ All oneway calls sent rapidly (no waiting for responses)")
+            
+        except Exception as e:
+            print(f"  ✗ Unexpected error in oneway call: {e}")
             
         print("\n=== Python Client Demo Complete ===")
         

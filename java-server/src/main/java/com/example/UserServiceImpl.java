@@ -78,4 +78,17 @@ public class UserServiceImpl implements UserService.Iface {
         
         return "User data is valid: " + name + " (age: " + age + ", active: " + isActive + ")";
     }
+
+    @Override
+    public void logUserActivity(String action, long userId, String timestamp) throws TException {
+        // This is a oneway method - no response is sent back to the client
+        System.out.println("[ONEWAY] User Activity Log: " + timestamp + " - User " + userId + " performed: " + action);
+        
+        // Simulate some processing time
+        try {
+            Thread.sleep(10); // Small delay to show async behavior
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+        }
+    }
 }

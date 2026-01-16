@@ -66,6 +66,16 @@ class Iface(object):
         """
         pass
 
+    def logUserActivity(self, action, userId, timestamp):
+        """
+        Parameters:
+         - action
+         - userId
+         - timestamp
+
+        """
+        pass
+
 
 class Client(Iface):
     def __init__(self, iprot, oprot=None):
@@ -270,6 +280,26 @@ class Client(Iface):
             return result.success
         raise TApplicationException(TApplicationException.MISSING_RESULT, "validateUserData failed: unknown result")
 
+    def logUserActivity(self, action, userId, timestamp):
+        """
+        Parameters:
+         - action
+         - userId
+         - timestamp
+
+        """
+        self.send_logUserActivity(action, userId, timestamp)
+
+    def send_logUserActivity(self, action, userId, timestamp):
+        self._oprot.writeMessageBegin('logUserActivity', TMessageType.ONEWAY, self._seqid)
+        args = logUserActivity_args()
+        args.action = action
+        args.userId = userId
+        args.timestamp = timestamp
+        args.write(self._oprot)
+        self._oprot.writeMessageEnd()
+        self._oprot.trans.flush()
+
 
 class Processor(Iface, TProcessor):
     def __init__(self, handler):
@@ -281,6 +311,7 @@ class Processor(Iface, TProcessor):
         self._processMap["deleteUser"] = Processor.process_deleteUser
         self._processMap["getAllUsers"] = Processor.process_getAllUsers
         self._processMap["validateUserData"] = Processor.process_validateUserData
+        self._processMap["logUserActivity"] = Processor.process_logUserActivity
         self._on_message_begin = None
 
     def on_message_begin(self, func):
@@ -449,6 +480,17 @@ class Processor(Iface, TProcessor):
         result.write(oprot)
         oprot.writeMessageEnd()
         oprot.trans.flush()
+
+    def process_logUserActivity(self, seqid, iprot, oprot):
+        args = logUserActivity_args()
+        args.read(iprot)
+        iprot.readMessageEnd()
+        try:
+            self._handler.logUserActivity(args.action, args.userId, args.timestamp)
+        except TTransport.TTransportException:
+            raise
+        except Exception:
+            logging.exception('Exception in oneway handler')
 
 # HELPER FUNCTIONS AND STRUCTURES
 
@@ -1273,6 +1315,94 @@ class validateUserData_result(object):
 all_structs.append(validateUserData_result)
 validateUserData_result.thrift_spec = (
     (0, TType.STRING, 'success', 'UTF8', None, ),  # 0
+)
+
+
+class logUserActivity_args(object):
+    """
+    Attributes:
+     - action
+     - userId
+     - timestamp
+
+    """
+    thrift_spec = None
+
+
+    def __init__(self, action = None, userId = None, timestamp = None,):
+        self.action = action
+        self.userId = userId
+        self.timestamp = timestamp
+
+    def read(self, iprot):
+        if iprot._fast_decode is not None and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None:
+            iprot._fast_decode(self, iprot, [self.__class__, self.thrift_spec])
+            return
+        iprot.readStructBegin()
+        while True:
+            (fname, ftype, fid) = iprot.readFieldBegin()
+            if ftype == TType.STOP:
+                break
+            if fid == 1:
+                if ftype == TType.STRING:
+                    self.action = iprot.readString().decode('utf-8', errors='replace') if sys.version_info[0] == 2 else iprot.readString()
+                else:
+                    iprot.skip(ftype)
+            elif fid == 2:
+                if ftype == TType.I64:
+                    self.userId = iprot.readI64()
+                else:
+                    iprot.skip(ftype)
+            elif fid == 3:
+                if ftype == TType.STRING:
+                    self.timestamp = iprot.readString().decode('utf-8', errors='replace') if sys.version_info[0] == 2 else iprot.readString()
+                else:
+                    iprot.skip(ftype)
+            else:
+                iprot.skip(ftype)
+            iprot.readFieldEnd()
+        iprot.readStructEnd()
+
+    def write(self, oprot):
+        self.validate()
+        if oprot._fast_encode is not None and self.thrift_spec is not None:
+            oprot.trans.write(oprot._fast_encode(self, [self.__class__, self.thrift_spec]))
+            return
+        oprot.writeStructBegin('logUserActivity_args')
+        if self.action is not None:
+            oprot.writeFieldBegin('action', TType.STRING, 1)
+            oprot.writeString(self.action.encode('utf-8') if sys.version_info[0] == 2 else self.action)
+            oprot.writeFieldEnd()
+        if self.userId is not None:
+            oprot.writeFieldBegin('userId', TType.I64, 2)
+            oprot.writeI64(self.userId)
+            oprot.writeFieldEnd()
+        if self.timestamp is not None:
+            oprot.writeFieldBegin('timestamp', TType.STRING, 3)
+            oprot.writeString(self.timestamp.encode('utf-8') if sys.version_info[0] == 2 else self.timestamp)
+            oprot.writeFieldEnd()
+        oprot.writeFieldStop()
+        oprot.writeStructEnd()
+
+    def validate(self):
+        return
+
+    def __repr__(self):
+        L = ['%s=%r' % (key, value)
+             for key, value in self.__dict__.items()]
+        return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
+
+    def __eq__(self, other):
+        return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
+
+    def __ne__(self, other):
+        return not (self == other)
+all_structs.append(logUserActivity_args)
+logUserActivity_args.thrift_spec = (
+    None,  # 0
+    (1, TType.STRING, 'action', 'UTF8', None, ),  # 1
+    (2, TType.I64, 'userId', None, None, ),  # 2
+    (3, TType.STRING, 'timestamp', 'UTF8', None, ),  # 3
 )
 fix_spec(all_structs)
 del all_structs
