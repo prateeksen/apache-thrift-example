@@ -1,0 +1,120 @@
+# Generated Thrift bindings
+gen-java/
+gen-py/
+gen-rb/
+
+# Maven build artifacts
+java-server/target/
+java-client/target/
+**/target/
+
+# Maven wrapper
+.mvn/
+mvnw
+mvnw.cmd
+
+# Java compiled classes
+*.class
+*.jar
+*.war
+*.ear
+*.nar
+
+# Java logs
+*.log
+
+# Python compiled files
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# Python virtual environments
+env/
+venv/
+ENV/
+env.bak/
+venv.bak/
+
+# Ruby gems
+*.gem
+/.bundle/
+/vendor/bundle/
+/lib/bundler/man/
+
+# Ruby logs
+*.rbc
+capybara-*.html
+.rspec
+/log/
+/tmp/
+/db/*.sqlite3
+/db/*.sqlite3-journal
+
+# IDE files
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# OS files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Backup files
+*.bak
+*.backup
+*.orig
+
+# Temporary files
+*.tmp
+*.temp
+
+# Node modules (if any Node.js tools are used)
+node_modules/
+
+# Environment files
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# Coverage reports
+coverage/
+*.cover
+.coverage
+.coverage.*
+
+# Test artifacts
+.pytest_cache/
+.tox/
+.coverage
+htmlcov/
+
+# IDE settings
+.settings/
+.project
+.classpath
