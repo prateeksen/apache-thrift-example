@@ -7,6 +7,8 @@ sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 from thrift.transport import TSocket
 from thrift.transport import TTransport
 from thrift.protocol import TBinaryProtocol
+from thrift.protocol import TCompactProtocol
+from thrift.protocol import TJSONProtocol
 from thrift.server import TServer
 from thrift.Thrift import TApplicationException
 
@@ -17,21 +19,37 @@ def main():
     # Server connection details
     host = 'localhost'
     port = 9091
-    
+
+    # Protocol selection: env > arg > default
+    import os
+    import sys
+    env_protocol = os.environ.get('THRIFT_PROTOCOL')
+    arg_protocol = sys.argv[1] if len(sys.argv) > 1 else None
+    protocol_name = (env_protocol if env_protocol else (arg_protocol if arg_protocol else 'binary')).strip().lower()
+
     try:
         # Create connection
         transport = TSocket.TSocket(host, port)
         transport = TTransport.TBufferedTransport(transport)
-        protocol = TBinaryProtocol.TBinaryProtocol(transport)
+        if protocol_name == 'compact':
+            protocol = TCompactProtocol.TCompactProtocol(transport)
+        elif protocol_name == 'json':
+            protocol = TJSONProtocol.TJSONProtocol(transport)
+        else:
+            protocol = TBinaryProtocol.TBinaryProtocol(transport)
+
+        # Set env variable for child processes (optional, for demo)
+        os.environ['THRIFT_PROTOCOL'] = protocol_name
+
         client = UserService.Client(protocol)
-        
+
         # Open connection
         transport.open()
-        print(f"Connected to Thrift server at {host}:{port}")
-        
+        print(f"Connected to Thrift server at {host}:{port} using protocol: {protocol_name}")
+
         # Perform operations
         perform_user_operations(client)
-        
+
     except Exception as e:
         print(f"Error: {e}")
     finally:

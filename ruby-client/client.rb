@@ -13,14 +13,29 @@ class RubyClient
 
   def run
     begin
-      # Create connection
+
+      # Protocol selection: ENV > ARGV > default
+      protocol_name = (ENV['THRIFT_PROTOCOL'] && !ENV['THRIFT_PROTOCOL'].empty?) ? ENV['THRIFT_PROTOCOL'] : (ARGV[0] ? ARGV[0] : 'binary')
+      protocol_name = protocol_name.strip.downcase
+
       transport = Thrift::BufferedTransport.new(Thrift::Socket.new(@host, @port))
-      protocol = Thrift::BinaryProtocol.new(transport)
+      protocol = case protocol_name
+                 when 'compact'
+                   Thrift::CompactProtocol.new(transport)
+                 when 'json'
+                   Thrift::JsonProtocol.new(transport)
+                 else
+                   Thrift::BinaryProtocol.new(transport)
+                 end
+
+      # Set ENV for child processes (optional, for demo)
+      ENV['THRIFT_PROTOCOL'] = protocol_name
+
       client = UserService::UserService::Client.new(protocol)
 
       # Open connection
       transport.open
-      puts "Connected to Thrift server at #{@host}:#{@port}"
+      puts "Connected to Thrift server at #{@host}:#{@port} using protocol: #{protocol_name}"
 
       # Perform operations
       perform_user_operations(client)

@@ -4,6 +4,9 @@ import UserService.*;
 import org.apache.thrift.TException;
 import org.apache.thrift.TApplicationException;
 import org.apache.thrift.protocol.TBinaryProtocol;
+import org.apache.thrift.protocol.TCompactProtocol;
+import org.apache.thrift.protocol.TJSONProtocol;
+import org.apache.thrift.protocol.TSimpleJSONProtocol;
 import org.apache.thrift.protocol.TProtocol;
 import org.apache.thrift.transport.TSocket;
 import org.apache.thrift.transport.TTransport;
@@ -18,14 +21,38 @@ public class JavaClient {
     public static void main(String[] args) {
         TTransport transport = null;
         try {
-            // Create connection to server
+
+            // Protocol selection: env > arg > default
+            String envProtocol = System.getenv("THRIFT_PROTOCOL");
+            String argProtocol = (args.length > 0) ? args[0] : null;
+            String protocolName = (envProtocol != null && !envProtocol.isEmpty()) ? envProtocol : (argProtocol != null ? argProtocol : "binary");
+            protocolName = protocolName.trim().toLowerCase();
+
             transport = new TSocket(SERVER_HOST, SERVER_PORT);
-            TProtocol protocol = new TBinaryProtocol(transport);
+            TProtocol protocol;
+            switch (protocolName) {
+                case "compact":
+                    protocol = new TCompactProtocol(transport);
+                    break;
+                case "json":
+                    protocol = new TJSONProtocol(transport);
+                    break;
+                case "simplejson":
+                    protocol = new TSimpleJSONProtocol(transport);
+                    break;
+                case "binary":
+                default:
+                    protocol = new TBinaryProtocol(transport);
+            }
+
+            // Set env variable for child processes (optional, for demo)
+            System.setProperty("THRIFT_PROTOCOL", protocolName);
+
             UserService.Client client = new UserService.Client(protocol);
 
             // Open transport
             transport.open();
-            System.out.println("Connected to Thrift server at " + SERVER_HOST + ":" + SERVER_PORT);
+            System.out.println("Connected to Thrift server at " + SERVER_HOST + ":" + SERVER_PORT + " using protocol: " + protocolName);
 
             // Demo operations
             performUserOperations(client);
