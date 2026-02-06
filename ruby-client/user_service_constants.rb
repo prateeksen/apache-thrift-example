@@ -5,7 +5,7 @@
 #
 
 require 'thrift'
-require 'user_service_types'
+require_relative 'user_service_types'
 
 module UserService
 end

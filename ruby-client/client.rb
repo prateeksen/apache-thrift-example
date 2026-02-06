@@ -43,7 +43,13 @@ class RubyClient
     rescue => e
       puts "Error: #{e.message}"
     ensure
-      transport.close if transport
+      if transport
+        begin
+          transport.close if transport.open?
+        rescue IOError
+          # Transport already closed
+        end
+      end
       puts "Connection closed."
     end
   end
@@ -114,10 +120,10 @@ class RubyClient
         puts "  ✗ Unexpected Exception: #{e}"
       end
       
-      # Test 2: Invalid data (should trigger TApplicationException)
+      # Test 2: Invalid data with empty name (should trigger server-side TApplicationException)
       begin
-        puts "  Attempting invalid call with nil name..."
-        result = client.validateUserData(nil, 25, true)
+        puts "  Attempting invalid call with empty name..."
+        result = client.validateUserData("", 25, true)
         puts "  ✗ Should not reach here! Result: #{result}"
       rescue Thrift::ApplicationException => e
         puts "  ✓ Caught TApplicationException (EXCEPTION frame): #{e.type} - #{e.message}"
@@ -125,7 +131,7 @@ class RubyClient
         puts "  ✗ Unexpected Exception instead of TApplicationException: #{e}"
       end
       
-      # Test 3: Invalid age (should trigger TApplicationException)
+      # Test 3: Invalid age (should trigger server-side TApplicationException)
       begin
         puts "  Attempting invalid call with age = 200..."
         result = client.validateUserData("Jane Doe", 200, false)
